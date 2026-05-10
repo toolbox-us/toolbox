@@ -1,0 +1,255 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-screen antialiased;
+    background-color: #0b0d10;
+    color: #d7dce2;
+    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  code,
+  pre,
+  textarea,
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  }
+
+  ::selection {
+    background: #5a2e1d;
+    color: #d7dce2;
+  }
+}
+
+#root {
+  @apply min-h-screen;
+}
+
+@layer components {
+  .panel {
+    @apply relative rounded-xl border p-4;
+    background-color: #111317;
+    border-color: #272c33;
+  }
+
+  .panel-elevated {
+    background-color: #15181d;
+    border-color: #272c33;
+  }
+
+  .section-shell {
+    @apply relative overflow-hidden rounded-xl border p-4 sm:p-6;
+    background-color: #111317;
+    border-color: #272c33;
+  }
+
+  .hero-badge {
+    @apply inline-flex items-center gap-2 rounded border px-2.5 py-1 text-xs font-semibold uppercase tracking-widest;
+    background-color: #1b1f25;
+    border-color: #303640;
+    color: #d7dce2;
+  }
+
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-widest;
+    color: #9aa3ad;
+  }
+
+  .tool-card {
+    @apply rounded-xl border p-4;
+    background-color: #15181d;
+    border-color: #272c33;
+  }
+
+  .tool-card-title {
+    @apply text-sm font-semibold;
+    color: #d7dce2;
+  }
+
+  .tool-card-subtitle {
+    @apply text-xs;
+    color: #9aa3ad;
+  }
+
+  .stat-card {
+    @apply rounded-xl border p-4;
+    background-color: #111317;
+    border-color: #272c33;
+  }
+
+  .result-panel {
+    @apply rounded-xl border p-3;
+    background-color: #0b0d10;
+    border-color: #272c33;
+    color: #d7dce2;
+  }
+
+  .list-card {
+    @apply flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition;
+    background-color: #111317;
+    border-color: #272c33;
+  }
+
+  .list-card:hover {
+    background-color: #222730;
+    border-color: #303640;
+  }
+
+  .input {
+    @apply w-full rounded border px-3.5 py-2.5 text-sm outline-none transition;
+    background-color: #0b0d10;
+    border-color: #303640;
+    color: #d7dce2;
+  }
+
+  .input::placeholder {
+    color: #75808a;
+  }
+
+  .input:focus {
+    border-color: #ff6c37;
+    box-shadow: 0 0 0 2px rgba(255, 108, 55, 0.32);
+    outline: none;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded border px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply btn;
+    background-color: #ff6c37;
+    border-color: #e85d2a;
+    color: #ffffff;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: #ff7b4c;
+    border-color: #ff6c37;
+  }
+
+  .btn-secondary {
+    @apply btn;
+    background-color: #1b1f25;
+    border-color: #303640;
+    color: #d7dce2;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background-color: #222730;
+    border-color: #3b424c;
+    color: #e5e5e5;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold;
+    background-color: #1b1f25;
+    border-color: #303640;
+    color: #d7dce2;
+  }
+
+
+  /* ── React Tabs ─────────────────────────────────────── */
+  .react-tabs {
+    @apply space-y-4;
+  }
+
+   .react-tabs__tab-list {
+     @apply mb-4 flex flex-nowrap gap-1 overflow-x-auto p-1;
+     background-color: #111317;
+     border-bottom: none;
+     list-style: none;
+     scroll-behavior: smooth;
+     border-radius: 0.5rem 0.5rem 0 0;
+   }
+
+  .react-tabs__tab {
+    @apply cursor-pointer rounded px-3.5 py-2 text-sm transition;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    white-space: nowrap;
+    flex-shrink: 0;
+    color: #9aa3ad;
+  }
+
+  .react-tabs__tab:hover {
+    background-color: #222730;
+    color: #d7dce2;
+  }
+
+   .react-tabs__tab--selected {
+     background-color: #ff6c37;
+     color: #ffffff;
+     border-bottom: none;
+   }
+
+   .react-tabs__tab:focus {
+     outline: 2px solid rgba(61, 130, 204, 0.5);
+     outline-offset: 1px;
+   }
+
+  .react-tabs--rich .react-tabs__tab-list {
+    @apply flex-wrap;
+    background-color: #15181d;
+  }
+
+  .react-tabs--rich .react-tabs__tab {
+    @apply min-w-[110px] flex-col items-start gap-0 whitespace-normal py-2.5;
+    flex-shrink: 1;
+  }
+
+   .react-tabs--rich .react-tabs__tab--selected {
+     background-color: #ff6c37;
+     color: #ffffff;
+     border-bottom: none;
+   }
+
+  .react-tabs__tab-panel {
+    @apply pt-2;
+  }
+
+  .react-tabs__tab-panel--selected {
+    @apply block;
+    animation: panel-enter 150ms ease-out;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0d10;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #272c33;
+  border-radius: 4px;
+  border: 2px solid #0b0d10;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b424c;
+}
+
+/* ── Animation ──────────────────────────────────────── */
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

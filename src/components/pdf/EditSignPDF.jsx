@@ -120,32 +120,46 @@ function OperationFrame({
   const accent = isSelected ? '#3b82f6' : (op.type === 'shape' ? (op.borderColor ?? '#ef4444') : (op.color ?? '#3b82f6'));
 
   function startMove(e) {
-    if (e.button !== 0) return;
+    if (typeof e.button === 'number' && e.button !== 0) return;
     if (e.target.closest('textarea, input, button')) return;
     e.preventDefault(); e.stopPropagation();
     onDragStart?.();
     onSelect(op.id);
+    const pointerId = e.pointerId;
+    if (typeof pointerId === 'number') e.currentTarget.setPointerCapture?.(pointerId);
     const mx0 = e.clientX, my0 = e.clientY, x0 = op.x, y0 = op.y;
-    const onMove = (me) => onUpdate(op.id, {
-      x: Math.max(0, Math.round(x0 + (me.clientX - mx0) / zoom)),
-      y: Math.max(0, Math.round(y0 - (me.clientY - my0) / zoom))
-    });
-    const onUp = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    const onMove = (pe) => {
+      if (typeof pointerId === 'number' && pe.pointerId !== pointerId) return;
+      onUpdate(op.id, {
+        x: Math.max(0, Math.round(x0 + (pe.clientX - mx0) / zoom)),
+        y: Math.max(0, Math.round(y0 - (pe.clientY - my0) / zoom))
+      });
+    };
+    const onUp = (pe) => {
+      if (typeof pointerId === 'number' && pe.pointerId !== pointerId) return;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   }
 
   function startResize(handleId, e) {
-    if (e.button !== 0) return;
+    if (typeof e.button === 'number' && e.button !== 0) return;
     e.preventDefault(); e.stopPropagation();
     onDragStart?.();
+    const pointerId = e.pointerId;
+    if (typeof pointerId === 'number') e.currentTarget.setPointerCapture?.(pointerId);
     const { w: w0, h: h0 } = getOpDimensions(op);
     const mx0 = e.clientX, my0 = e.clientY, x0 = op.x, y0 = op.y;
     const minW = isTextBox ? 70 : 20;
     const minH = isTextBox ? 28 : 10;
-    const onMove = (me) => {
-      const dx = (me.clientX - mx0) / zoom;
-      const dy = (me.clientY - my0) / zoom;
+    const onMove = (pe) => {
+      if (typeof pointerId === 'number' && pe.pointerId !== pointerId) return;
+      const dx = (pe.clientX - mx0) / zoom;
+      const dy = (pe.clientY - my0) / zoom;
       let nx = x0, ny = y0, nw = w0, nh = h0;
       if (handleId.includes('e')) nw = Math.max(minW, w0 + dx);
       if (handleId.includes('w')) { nx = x0 + dx; nw = Math.max(minW, w0 - dx); }
@@ -153,9 +167,15 @@ function OperationFrame({
       if (handleId.includes('n')) nh = Math.max(minH, h0 - dy);
       onUpdate(op.id, { x: Math.round(nx), y: Math.round(ny), width: Math.round(nw), height: Math.round(nh) });
     };
-    const onUp = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    const onUp = (pe) => {
+      if (typeof pointerId === 'number' && pe.pointerId !== pointerId) return;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   }
 
   const borderStyle = isTextBox
@@ -177,9 +197,10 @@ function OperationFrame({
         background: isTextBox ? 'rgba(255,255,255,0.08)' : 'transparent',
         boxSizing: 'border-box',
         userSelect: 'none',
+        touchAction: 'none',
         zIndex: isSelected ? 20 : 10
       }}
-      onMouseDown={startMove}
+      onPointerDown={startMove}
       onClick={(e) => { e.stopPropagation(); onSelect(op.id); }}
     >
       {/* Header bar */}
@@ -195,7 +216,7 @@ function OperationFrame({
           autoFocus={Boolean(shouldAutoFocus)}
           onFocus={() => onAutoFocused?.(op.id)}
           onChange={(e) => onUpdate(op.id, { text: e.target.value })}
-          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           style={{
             position: 'absolute', left: 0, top: 14, width: '100%', height: 'calc(100% - 14px)',
             border: 'none', outline: 'none', padding: '4px 6px', margin: 0, resize: 'none',
@@ -213,7 +234,7 @@ function OperationFrame({
           autoFocus={Boolean(shouldAutoFocus)}
           onFocus={() => onAutoFocused?.(op.id)}
           onChange={(e) => onUpdate(op.id, { text: e.target.value })}
-          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           style={{
             position: 'absolute', left: 0, top: 14, width: '100%', height: 'calc(100% - 14px)',
             border: 'none', outline: 'none', padding: '4px 6px', background: 'transparent',
@@ -255,7 +276,11 @@ function OperationFrame({
 
       <button type="button" onClick={(e) => { e.stopPropagation(); onDelete(op.id); }} style={{ position: 'absolute', top: -10, right: -10, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: '#fff', fontSize: 11, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, zIndex: 30 }} title="Remove">×</button>
       {canResize && RESIZE_HANDLES.map((rh) => (
-        <div key={rh.id} onMouseDown={(e) => startResize(rh.id, e)} style={{ position: 'absolute', width: 10, height: 10, background: accent, borderRadius: 2, cursor: rh.cur, zIndex: 25, ...rh.style }} />
+        <div
+          key={rh.id}
+          onPointerDown={(e) => startResize(rh.id, e)}
+          style={{ position: 'absolute', width: 14, height: 14, background: accent, borderRadius: 2, cursor: rh.cur, zIndex: 25, touchAction: 'none', ...rh.style }}
+        />
       ))}
     </div>
   );
@@ -461,6 +486,52 @@ export default function EditSignPDF() {
     const c = signatureCanvasRef.current;
     if (!c) return;
     c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  };
+
+  const getCanvasPoint = (event, canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY
+    };
+  };
+
+  const startDrawPointer = (event) => {
+    event.preventDefault();
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    canvas.setPointerCapture?.(event.pointerId);
+    const { x: px, y: py } = getCanvasPoint(event, canvas);
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = signatureColor;
+    ctx.lineWidth = signatureLineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    setDrawing(true);
+  };
+
+  const drawPointer = (event) => {
+    if (!drawing) return;
+    event.preventDefault();
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const { x: px, y: py } = getCanvasPoint(event, canvas);
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = signatureColor;
+    ctx.lineWidth = signatureLineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineTo(px, py);
+    ctx.stroke();
+  };
+
+  const endDrawPointer = (event) => {
+    signatureCanvasRef.current?.releasePointerCapture?.(event.pointerId);
+    setDrawing(false);
   };
 
   // ── Canvas click: place a new text/date box ──────────────────────
@@ -822,7 +893,11 @@ export default function EditSignPDF() {
               ref={signatureCanvasRef}
               width={420} height={130}
               className="w-full rounded border border-slate-700 bg-white"
-              onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
+              onPointerDown={startDrawPointer}
+              onPointerMove={drawPointer}
+              onPointerUp={endDrawPointer}
+              onPointerCancel={endDrawPointer}
+              style={{ touchAction: 'none' }}
             />
             <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-slate-800 pt-3">
               <div className="flex items-center gap-2">

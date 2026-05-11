@@ -22,25 +22,45 @@ export default function SignPDF() {
   
   const canvasRef = useRef(null);
 
+  const getCanvasPoint = (event, canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY
+    };
+  };
+
   const startDraw = (event) => {
+    event.preventDefault();
     const canvas = canvasRef.current;
+    canvas.setPointerCapture?.(event.pointerId);
+    const { x, y } = getCanvasPoint(event, canvas);
     const ctx = canvas.getContext('2d');
     ctx.strokeStyle = signatureColor;
     ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
-    ctx.moveTo(event.nativeEvent.offsetX, event.nativeEvent.offsetY);
+    ctx.moveTo(x, y);
     setDrawing(true);
   };
 
   const draw = (event) => {
     if (!drawing) return;
+    event.preventDefault();
     const canvas = canvasRef.current;
+    const { x, y } = getCanvasPoint(event, canvas);
     const ctx = canvas.getContext('2d');
-    ctx.lineTo(event.nativeEvent.offsetX, event.nativeEvent.offsetY);
+    ctx.lineTo(x, y);
     ctx.stroke();
   };
 
-  const endDraw = () => setDrawing(false);
+  const endDraw = (event) => {
+    canvasRef.current?.releasePointerCapture?.(event.pointerId);
+    setDrawing(false);
+  };
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -268,10 +288,11 @@ export default function SignPDF() {
                   width={500}
                   height={150}
                   className="w-full rounded border-2 border-slate-600 bg-white cursor-crosshair"
-                  onMouseDown={startDraw}
-                  onMouseMove={draw}
-                  onMouseUp={endDraw}
-                  onMouseLeave={endDraw}
+                  onPointerDown={startDraw}
+                  onPointerMove={draw}
+                  onPointerUp={endDraw}
+                  onPointerCancel={endDraw}
+                  style={{ touchAction: 'none' }}
                 />
               </div>
 
